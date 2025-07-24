@@ -1,0 +1,9 @@
+com\mycompany\appsena\servlets\ProductosServlet.class
+com\mycompany\appsena\servlets\LogoutServlet.class
+com\mycompany\appsena\JakartaRestConfiguration.class
+com\mycompany\appsena\models\Pedido.class
+com\mycompany\appsena\servlets\PedidosServlet.class
+com\mycompany\appsena\models\Producto.class
+com\mycompany\appsena\servlets\LoginServlet.class
+com\mycompany\appsena\resources\JakartaEE10Resource.class
+com\mycompany\appsena\models\PedidoDetalle.class
