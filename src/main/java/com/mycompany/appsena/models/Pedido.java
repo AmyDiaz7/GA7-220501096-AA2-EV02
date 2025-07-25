@@ -1,38 +1,39 @@
 package com.mycompany.appsena.models;
 
-import java.sql.Timestamp; // <-- Importamos Timestamp
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public class Pedido {
     private int id;
     private String referencia;
     private String nombreCliente;
-    private Timestamp fechaPedido; // <-- CAMBIO AQUÍ: de LocalDateTime a Timestamp
+    private Timestamp fecha;
     private double total;
     private String estado;
 
-    // Constructor
-    public Pedido(int id, String referencia, String nombreCliente, Timestamp fechaPedido, double total, String estado) {
+    public Pedido(int id, String referencia, String nombreCliente, Timestamp fecha, double total, String estado) {
         this.id = id;
         this.referencia = referencia;
         this.nombreCliente = nombreCliente;
-        this.fechaPedido = fechaPedido; // <-- Acepta Timestamp directamente
+        this.fecha = fecha;
         this.total = total;
         this.estado = estado;
     }
     
-    // Este método es clave, nos permite formatear la fecha en el JSP sin problemas.
+    public String getFechaDatetimeLocal() {
+        if (this.fecha == null) return "";
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(this.fecha);
+    }
+    
     public String getFechaFormateada() {
-        if (this.fechaPedido == null) return "";
-        // Formato: 09/07/2025 16:17
-        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(this.fechaPedido);
+        if (this.fecha == null) return "";
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(this.fecha);
     }
 
-    // Getters
     public int getId() { return id; }
     public String getReferencia() { return referencia; }
     public String getNombreCliente() { return nombreCliente; }
-    public Timestamp getFechaPedido() { return fechaPedido; } // <-- Devuelve Timestamp
+    public Timestamp getFecha() { return fecha; } // <-- Devuelve Timestamp
     public double getTotal() { return total; }
     public String getEstado() { return estado; }
 }

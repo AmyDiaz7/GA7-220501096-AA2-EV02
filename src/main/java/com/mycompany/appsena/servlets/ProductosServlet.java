@@ -89,6 +89,7 @@ public class ProductosServlet extends HttpServlet {
             }
 
             String buscar = request.getParameter("buscar");
+            System.out.println("buscar: " + buscar);
             String sqlQuery = "SELECT * FROM productos";
             if (buscar != null) {
                 sqlQuery += " WHERE CONCAT(id, sku, nombre, stock, precio) LIKE '%" + buscar + "%'";

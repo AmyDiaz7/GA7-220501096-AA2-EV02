@@ -36,31 +36,37 @@ public class PedidosServlet extends HttpServlet {
             Connection conn = DriverManager.getConnection(url, "root", "");
             Statement stmt = conn.createStatement();
             
-            // --- Logica de Acciones POST (idéntica a ProductosServlet) ---
             if (accion != null) {
                 switch (accion) {
                     case "agregar": {
-                        // OJO: Los nombres de los parámetros vienen del formulario del modal
                         String referencia = request.getParameter("pedido-referencia");
-                        String cliente = request.getParameter("pedido-nombre-cliente");
+                        String nombreCliente = request.getParameter("pedido-nombre-cliente");
+                        String fecha = request.getParameter("pedido-fecha");
+                        String estado = request.getParameter("pedido-estado");
                         double total = Double.parseDouble(request.getParameter("pedido-total"));
-                        
-                        stmt.executeUpdate("INSERT INTO pedidos (referencia, nombre_cliente, fecha_pedido, total, estado) VALUES ('" + referencia + "', '" + cliente + "', NOW(), " + total + ", 'Pendiente')");
+
+                        String sqlFecha = (fecha != null && !fecha.isEmpty()) ? "'" + fecha.replace("T", " ") + ":00'" : "NOW()";
+    String sqlEstado = (estado != null && !estado.isEmpty()) ? "'" + estado + "'" : "'Pendiente'";
+
+                        stmt.executeUpdate("INSERT INTO pedidos (referencia, nombre_cliente, fecha_pedido, total, estado) VALUES ('" + referencia + "', '" + nombreCliente + "', " + sqlFecha + ", " + total + ", " + sqlEstado + ")");
                         break;
                     }
                     case "editar": {
-                        // OJO: Los nombres de los parámetros vienen del formulario del modal
                         int id = Integer.parseInt(request.getParameter("pedido-id"));
                         String referencia = request.getParameter("pedido-referencia");
-                        String cliente = request.getParameter("pedido-nombre-cliente");
+                        String nombreCliente = request.getParameter("pedido-nombre-cliente");
+                        String fecha = request.getParameter("pedido-fecha");
+                        String estado = request.getParameter("pedido-estado");
                         double total = Double.parseDouble(request.getParameter("pedido-total"));
-                        
-                        stmt.executeUpdate("UPDATE pedidos SET referencia = '" + referencia + "', nombre_cliente = '" + cliente + "', total = " + total + " WHERE id = " + id);
+
+                        String sqlFecha = (fecha != null && !fecha.isEmpty()) ? "'" + fecha.replace("T", " ") + ":00'" : "NOW()";
+                        String sqlEstado = (estado != null && !estado.isEmpty()) ? "'" + estado + "'" : "'Pendiente'";
+
+                        stmt.executeUpdate("UPDATE pedidos SET referencia = '" + referencia + "', nombre_cliente = '" + nombreCliente + "', fecha_pedido = " + sqlFecha + ", total = " + total + ", estado = " + sqlEstado + " WHERE id = " + id);
                         break;
                     }
                     case "eliminar": {
                         int id = Integer.parseInt(request.getParameter("id"));
-                        // Por si hay detalles, los borramos primero para evitar errores
                         stmt.executeUpdate("DELETE FROM pedido_detalles WHERE pedido_id = " + id);
                         stmt.executeUpdate("DELETE FROM pedidos WHERE id = " + id);
                         break;
@@ -68,7 +74,6 @@ public class PedidosServlet extends HttpServlet {
                 }
             }
 
-            // --- Cargar la lista de pedidos (con búsqueda) ---
             ArrayList<Pedido> listaPedidos = new ArrayList<>();
             String buscar = request.getParameter("buscar");
             String sqlQuery = "SELECT * FROM pedidos";
@@ -87,7 +92,6 @@ public class PedidosServlet extends HttpServlet {
             stmt.close();
             conn.close();
             
-            // Reenviar al JSP
             RequestDispatcher rd = request.getRequestDispatcher("pedidos.jsp");
             rd.forward(request, response);
 

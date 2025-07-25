@@ -1,9 +1,8 @@
-// src/main/java/com/mycompany/appsena/models/PedidoDetalle.java
 package com.mycompany.appsena.models;
 
 public class PedidoDetalle {
     private int id;
-    private int pedidoId;       // <-- MUY IMPORTANTE para el JSP
+    private int pedidoId;   
     private int productoId;
     private String productoNombre; 
     private int cantidad;
@@ -18,7 +17,6 @@ public class PedidoDetalle {
         this.precio = precio;
     }
 
-    // Getters
     public int getId() { return id; }
     public int getPedidoId() { return pedidoId; }
     public int getProductoId() { return productoId; }
