@@ -42,7 +42,7 @@ public class LoginServlet extends HttpServlet {
             Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        String url = "jdbc:mysql://localhost:3306/servletlogin";
+        String url = "jdbc:mysql://localhost:3306/gt_app";
 
         Connection conexion;
         Statement statement;
