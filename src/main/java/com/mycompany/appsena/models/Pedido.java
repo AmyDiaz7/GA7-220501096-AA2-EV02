@@ -33,7 +33,7 @@ public class Pedido {
     public int getId() { return id; }
     public String getReferencia() { return referencia; }
     public String getNombreCliente() { return nombreCliente; }
-    public Timestamp getFecha() { return fecha; } // <-- Devuelve Timestamp
+    public Timestamp getFecha() { return fecha; }
     public double getTotal() { return total; }
     public String getEstado() { return estado; }
 }

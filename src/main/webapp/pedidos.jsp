@@ -29,6 +29,61 @@ uri="http://java.sun.com/jsp/jstl/core" %>
       .main-content {
         flex-grow: 1;
       }
+
+      .is-invalid {
+        border-color: #dc3545 !important;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+      }
+
+      .invalid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+        display: none;
+      }
+
+      .is-invalid ~ .invalid-feedback {
+        display: block;
+      }
+
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1055;
+      }
+
+      .modal {
+        z-index: 1050;
+      }
+
+      .modal-backdrop {
+        z-index: 1040;
+      }
+
+      .modal-dialog {
+        margin: 1.75rem auto;
+        max-width: 500px;
+      }
+
+      .modal-content {
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      }
+
+      .loading-products {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%236c757d' d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z' opacity='.25'/%3E%3Cpath fill='%23007bff' d='M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z'%3E%3CanimateTransform attributeName='transform' dur='0.75s' repeatCount='indefinite' type='rotate' values='0 12 12;360 12 12'/%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 20px;
+      }
     </style>
   </head>
   <body class="vh-100">
@@ -172,7 +227,7 @@ uri="http://java.sun.com/jsp/jstl/core" %>
       aria-labelledby="modalPedidoLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="modalPedidoLabel"></h5>
@@ -186,34 +241,44 @@ uri="http://java.sun.com/jsp/jstl/core" %>
           <div class="modal-body">
             <form method="post" action="pedidos" id="formPedido">
               <input type="hidden" name="accion" value="agregar" />
-              <div class="mb-3">
-                <label for="pedido-referencia" class="form-label"
-                  >Referencia:</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="pedido-referencia"
-                  name="pedido-referencia"
-                  placeholder="Ej: PED-2025-001"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label for="pedido-nombre-cliente" class="form-label"
-                  >Nombre Cliente:</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="pedido-nombre-cliente"
-                  name="pedido-nombre-cliente"
-                  placeholder="Ej: Juan Perez"
-                  required
-                />
-              </div>
+
               <div class="row">
                 <div class="col-md-6 mb-3">
+                  <label for="pedido-referencia" class="form-label"
+                    >Referencia:</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="pedido-referencia"
+                    name="pedido-referencia"
+                    placeholder="Ej: PED-2025-001"
+                    required
+                  />
+                  <div class="invalid-feedback">
+                    Por favor ingrese una referencia válida.
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="pedido-nombre-cliente" class="form-label"
+                    >Nombre Cliente:</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="pedido-nombre-cliente"
+                    name="pedido-nombre-cliente"
+                    placeholder="Ej: Juan Perez"
+                    required
+                  />
+                  <div class="invalid-feedback">
+                    Por favor ingrese el nombre del cliente.
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
                   <label for="pedido-fecha" class="form-label">Fecha:</label>
                   <input
                     type="datetime-local"
@@ -222,8 +287,11 @@ uri="http://java.sun.com/jsp/jstl/core" %>
                     name="pedido-fecha"
                     required
                   />
+                  <div class="invalid-feedback">
+                    Por favor seleccione una fecha válida.
+                  </div>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                   <label for="pedido-total" class="form-label">Total:</label>
                   <input
                     type="number"
@@ -232,27 +300,135 @@ uri="http://java.sun.com/jsp/jstl/core" %>
                     step="0.01"
                     id="pedido-total"
                     name="pedido-total"
-                    placeholder="Ej: 50000"
-                    required
+                    placeholder="Se calcula automáticamente"
+                    readonly
                   />
                 </div>
+                <div class="col-md-4 mb-3">
+                  <label for="pedido-estado" class="form-label">Estado:</label>
+                  <select
+                    class="form-select"
+                    id="pedido-estado"
+                    name="pedido-estado"
+                    required
+                  >
+                    <option value="">Seleccionar estado</option>
+                    <option value="Pendiente" selected>Pendiente</option>
+                    <option value="Pagado">Pagado</option>
+                    <option value="Bodega">Bodega</option>
+                    <option value="Transportando">Transportando</option>
+                    <option value="Entregado">Entregado</option>
+                  </select>
+                  <div class="invalid-feedback">
+                    Por favor seleccione un estado.
+                  </div>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="pedido-estado" class="form-label">Estado:</label>
-                <select
-                  class="form-select"
-                  id="pedido-estado"
-                  name="pedido-estado"
-                  required
-                >
-                  <option value="">Seleccionar estado</option>
-                  <option value="Pendiente" selected>Pendiente</option>
-                  <option value="Pagado">Pagado</option>
-                  <option value="Bodega">Bodega</option>
-                  <option value="Transportando">Transportando</option>
-                  <option value="Entregado">Entregado</option>
-                </select>
+
+              <hr class="my-4" />
+              <div class="row mb-3">
+                <div class="col-md-12">
+                  <h6 class="mb-3">Productos del Pedido</h6>
+
+                  <div class="card border-light bg-light mb-3">
+                    <div class="card-body">
+                      <div class="row g-2">
+                        <div class="col-md-5">
+                          <label class="form-label">Producto:</label>
+                          <select class="form-select" id="select-producto">
+                            <option value="">Cargando productos...</option>
+                          </select>
+                          <div class="invalid-feedback">
+                            Por favor seleccione un producto.
+                          </div>
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label">Cantidad:</label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="detalle-cantidad"
+                            min="1"
+                            value="1"
+                            required
+                          />
+                          <div class="invalid-feedback">
+                            Cantidad debe ser mayor a 0.
+                          </div>
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label">Precio:</label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="detalle-precio"
+                            step="0.01"
+                            readonly
+                          />
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label">Subtotal:</label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="detalle-subtotal"
+                            readonly
+                          />
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                          <button
+                            type="button"
+                            class="btn btn-success w-100"
+                            id="btnAgregarDetalle"
+                          >
+                            <i class="bi bi-plus"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Producto</th>
+                          <th>Cantidad</th>
+                          <th>Precio Unit.</th>
+                          <th>Subtotal</th>
+                          <th width="80">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="detallesBody">
+                        <tr id="sinProductos">
+                          <td colspan="5" class="text-center text-muted">
+                            No hay productos agregados
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
+
+              <input
+                type="hidden"
+                name="detallesEliminados"
+                id="detallesEliminados"
+                value="[]"
+              />
+              <input
+                type="hidden"
+                name="detallesAgregados"
+                id="detallesAgregados"
+                value="[]"
+              />
+              <input
+                type="hidden"
+                name="detallesEditados"
+                id="detallesEditados"
+                value="[]"
+              />
             </form>
           </div>
           <div class="modal-footer">
@@ -263,7 +439,12 @@ uri="http://java.sun.com/jsp/jstl/core" %>
             >
               Cancelar
             </button>
-            <button type="submit" class="btn btn-primary" form="formPedido">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              form="formPedido"
+              onclick="return validarYEnviarPedido()"
+            >
               Guardar Pedido
             </button>
           </div>
@@ -315,60 +496,721 @@ uri="http://java.sun.com/jsp/jstl/core" %>
       </div>
     </div>
 
+    <div
+      class="toast-container position-fixed top-0 end-0 p-3"
+      id="toastContainer"
+    ></div>
+
     <script>
-      const modalEliminar = document.getElementById("modalEliminar");
-      if (modalEliminar) {
-        modalEliminar.addEventListener("show.bs.modal", (event) => {
-          const button = event.relatedTarget;
-          document.getElementById("modalEliminarId").value =
-            button.getAttribute("data-pedido-id");
-          document.getElementById("modalEliminarNombre").textContent =
-            button.getAttribute("data-pedido-referencia");
+      let detallesOriginales = [];
+      let detallesActuales = [];
+      let detallesEliminados = [];
+      let detallesAgregados = [];
+      let detallesEditados = [];
+
+      let productosDisponibles = [];
+      let editandoIndex = -1;
+      let contadorTemporal = -1;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get("error");
+        const success = urlParams.get("success");
+        const referencia = urlParams.get("referencia");
+
+        if (error === "referencia_duplicada") {
+          mostrarError(
+            `La referencia '\${referencia}' ya existe. Por favor, usa una referencia diferente.`
+          );
+
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (error === "id_invalido") {
+          mostrarError(
+            "Error: ID de pedido inválido. No se pudo eliminar el pedido."
+          );
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (success === "eliminado") {
+          mostrarExito("Pedido eliminado correctamente.");
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        }
+
+        cargarProductos();
+        agregarValidacionTiempoReal();
+      });
+
+      async function cargarProductos() {
+        const select = document.getElementById("select-producto");
+        select.innerHTML = '<option value="">Cargando productos...</option>';
+        select.classList.add("loading-products");
+
+        try {
+          const response = await fetch("productos?accion=listar");
+          if (response.ok) {
+            const data = await response.json();
+            productosDisponibles = data;
+            actualizarSelectProductos();
+          } else {
+            throw new Error("Error del servidor");
+          }
+        } catch (error) {
+          mostrarError(
+            "Error al cargar los productos. Se usarán productos de ejemplo."
+          );
+          productosDisponibles = [
+            { id: 1, nombre: "Martillo", valor: 25000, stock: 10 },
+            { id: 2, nombre: "Destornillador", valor: 15000, stock: 20 },
+            { id: 3, nombre: "Taladro", valor: 120000, stock: 5 },
+            { id: 4, nombre: "Tornillos", valor: 500, stock: 100 },
+            { id: 5, nombre: "Clavos", valor: 300, stock: 200 },
+          ];
+          actualizarSelectProductos();
+        } finally {
+          select.classList.remove("loading-products");
+        }
+      }
+
+      function actualizarSelectProductos() {
+        const select = document.getElementById("select-producto");
+        select.innerHTML = '<option value="">Seleccionar producto...</option>';
+
+        productosDisponibles.forEach((producto) => {
+          const option = document.createElement("option");
+          option.value = producto.id;
+          option.textContent = `\${producto.nombre} - $\${producto.valor.toLocaleString()}`;
+          option.dataset.precio = producto.valor;
+          option.dataset.nombre = producto.nombre;
+          select.appendChild(option);
         });
       }
-    </script>
-    <!--
-    <script>
-      function validarInputsFormulario(event) {
-      const target = event.target;
 
-      switch (target.name) {
-        case "producto-stock":
-        const entero = parseInt(target.value);
-        if (!isNaN(entero)) {
-          target.value = entero;
-        } else {
-          target.value = "0";
-        }
-        break;
+      document
+        .getElementById("select-producto")
+        .addEventListener("change", function () {
+          const selectedOption = this.selectedOptions[0];
+          if (selectedOption && selectedOption.value) {
+            document.getElementById("detalle-precio").value =
+              selectedOption.dataset.precio;
+            calcularSubtotal();
+            limpiarValidacionCampo(this);
+          } else {
+            document.getElementById("detalle-precio").value = "";
+            document.getElementById("detalle-subtotal").value = "";
+          }
+        });
 
-        case "producto-valor":
-        const decimal = parseFloat(target.value);
-        if (!isNaN(decimal)) {
-          target.value = decimal.toFixed(2);
-        } else {
-          target.value = "0";
+      document
+        .getElementById("detalle-cantidad")
+        .addEventListener("input", function () {
+          calcularSubtotal();
+          if (this.value && this.value > 0) {
+            limpiarValidacionCampo(this);
+          }
+        });
+
+      function calcularSubtotal() {
+        const cantidad =
+          parseInt(document.getElementById("detalle-cantidad").value) || 0;
+        const precio =
+          parseFloat(document.getElementById("detalle-precio").value) || 0;
+        const subtotal = cantidad * precio;
+        document.getElementById("detalle-subtotal").value = subtotal.toFixed(2);
+      }
+
+      document
+        .getElementById("btnAgregarDetalle")
+        .addEventListener("click", function () {
+          if (!validarFormularioDetalle()) return;
+
+          const selectProducto = document.getElementById("select-producto");
+          const productoId = parseInt(selectProducto.value);
+          const productoNombre =
+            selectProducto.selectedOptions[0].dataset.nombre;
+          const cantidad = parseInt(
+            document.getElementById("detalle-cantidad").value
+          );
+          const precio = parseFloat(
+            document.getElementById("detalle-precio").value
+          );
+
+          if (!validarProductoDuplicado(productoId)) return;
+          if (!validarStock(productoId, cantidad)) return;
+
+          const detalle = {
+            productoId: productoId,
+            productoNombre: productoNombre,
+            cantidad: cantidad,
+            precio: precio,
+            subtotal: cantidad * precio,
+          };
+
+          if (editandoIndex >= 0) {
+            const detalleAnterior = detallesActuales[editandoIndex];
+            detalle.id = detalleAnterior.id;
+            detalle.esNuevo = detalleAnterior.esNuevo;
+
+            detallesActuales[editandoIndex] = detalle;
+
+            if (!detalle.esNuevo) {
+              const indexEditado = detallesEditados.findIndex(
+                (e) => e.id === detalle.id
+              );
+              const detalleEditado = {
+                id: detalle.id,
+                productoId: detalle.productoId,
+                cantidad: detalle.cantidad,
+                precio: detalle.precio,
+              };
+
+              if (indexEditado >= 0) {
+                detallesEditados[indexEditado] = detalleEditado;
+              } else {
+                detallesEditados.push(detalleEditado);
+              }
+            } else {
+              const indexAgregado = detallesAgregados.findIndex(
+                (a) => a.tempId === detalle.id
+              );
+              if (indexAgregado >= 0) {
+                detallesAgregados[indexAgregado] = {
+                  tempId: detalle.id,
+                  productoId: detalle.productoId,
+                  cantidad: detalle.cantidad,
+                  precio: detalle.precio,
+                };
+              }
+            }
+
+            editandoIndex = -1;
+            document.getElementById("btnAgregarDetalle").innerHTML =
+              '<i class="bi bi-plus"></i>';
+            document.getElementById("btnAgregarDetalle").className =
+              "btn btn-success w-100";
+            mostrarExito(
+              `Producto \${productoNombre} actualizado correctamente.`
+            );
+          } else {
+            detalle.id = contadorTemporal--;
+            detalle.esNuevo = true;
+
+            detallesActuales.push(detalle);
+            detallesAgregados.push({
+              tempId: detalle.id,
+              productoId: detalle.productoId,
+              cantidad: detalle.cantidad,
+              precio: detalle.precio,
+            });
+
+            mostrarExito(`Producto \${productoNombre} agregado correctamente.`);
+          }
+
+          actualizarTablaDetalles();
+          calcularTotalPedido();
+          limpiarFormularioDetalle();
+        });
+
+      function validarFormularioDetalle() {
+        let esValido = true;
+
+        const selectProducto = document.getElementById("select-producto");
+        const inputCantidad = document.getElementById("detalle-cantidad");
+
+        if (!selectProducto.value) {
+          mostrarValidacionCampo(
+            selectProducto,
+            "Por favor seleccione un producto."
+          );
+          esValido = false;
         }
-        break;
+
+        if (!inputCantidad.value || inputCantidad.value <= 0) {
+          mostrarValidacionCampo(
+            inputCantidad,
+            "La cantidad debe ser mayor a 0."
+          );
+          esValido = false;
+        }
+
+        return esValido;
       }
+
+      function actualizarTablaDetalles() {
+        const tbody = document.getElementById("detallesBody");
+
+        if (detallesActuales.length === 0) {
+          tbody.innerHTML =
+            '<tr id="sinProductos"><td colspan="5" class="text-center text-muted">No hay productos agregados</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+
+        detallesActuales.forEach((detalle, index) => {
+          const row = document.createElement("tr");
+          const badgeNuevo = detalle.esNuevo
+            ? ' <span class="badge bg-success">Nuevo</span>'
+            : "";
+          const badgeEditado =
+            !detalle.esNuevo &&
+            detallesEditados.find((e) => e.id === detalle.id)
+              ? ' <span class="badge bg-warning">Editado</span>'
+              : "";
+
+          row.innerHTML = `
+            <td>\${detalle.productoNombre}\${badgeNuevo}\${badgeEditado}</td>
+            <td>\${detalle.cantidad}</td>
+            <td>$\${parseFloat(detalle.precio).toLocaleString()}</td>
+            <td>$\${parseFloat(detalle.subtotal).toLocaleString()}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-warning me-1" onclick="editarDetalle(\${index})" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarDetalle(\${index})" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
       }
-    </script>
-    -->
-    <script>
+
+      function editarDetalle(index) {
+        const detalle = detallesActuales[index];
+
+        document.getElementById("select-producto").value = detalle.productoId;
+        document.getElementById("detalle-cantidad").value = detalle.cantidad;
+        document.getElementById("detalle-precio").value = detalle.precio;
+        document.getElementById("detalle-subtotal").value = detalle.subtotal;
+
+        editandoIndex = index;
+        document.getElementById("btnAgregarDetalle").innerHTML =
+          '<i class="bi bi-check"></i>';
+        document.getElementById("btnAgregarDetalle").className =
+          "btn btn-warning w-100";
+      }
+
+      function eliminarDetalle(index) {
+        if (!confirm("¿Está seguro de eliminar este producto del pedido?"))
+          return;
+
+        const detalle = detallesActuales[index];
+
+        if (!detalle.esNuevo && detalle.id > 0) {
+          detallesEliminados.push(detalle.id);
+
+          const indexEditado = detallesEditados.findIndex(
+            (e) => e.id === detalle.id
+          );
+          if (indexEditado >= 0) {
+            detallesEditados.splice(indexEditado, 1);
+          }
+        } else {
+          const indexAgregado = detallesAgregados.findIndex(
+            (a) => a.tempId === detalle.id
+          );
+          if (indexAgregado >= 0) {
+            detallesAgregados.splice(indexAgregado, 1);
+          }
+        }
+
+        detallesActuales.splice(index, 1);
+
+        actualizarTablaDetalles();
+        calcularTotalPedido();
+
+        if (editandoIndex === index) {
+          cancelarEdicion();
+        }
+
+        mostrarExito("Producto eliminado correctamente.");
+      }
+
+      function cancelarEdicion() {
+        editandoIndex = -1;
+        document.getElementById("btnAgregarDetalle").innerHTML =
+          '<i class="bi bi-plus"></i>';
+        document.getElementById("btnAgregarDetalle").className =
+          "btn btn-success w-100";
+        limpiarFormularioDetalle();
+      }
+
+      function limpiarFormularioDetalle() {
+        document.getElementById("select-producto").value = "";
+        document.getElementById("detalle-cantidad").value = "1";
+        document.getElementById("detalle-precio").value = "";
+        document.getElementById("detalle-subtotal").value = "";
+
+        limpiarValidacionCampo(document.getElementById("select-producto"));
+        limpiarValidacionCampo(document.getElementById("detalle-cantidad"));
+      }
+
+      function calcularTotalPedido() {
+        const total = detallesActuales.reduce(
+          (sum, detalle) => sum + parseFloat(detalle.subtotal),
+          0
+        );
+        document.getElementById("pedido-total").value = total.toFixed(2);
+      }
+
+      function validarYEnviarPedido() {
+        if (!validarFormularioPedido()) {
+          mostrarError(
+            "Por favor corrija los errores en el formulario antes de continuar."
+          );
+          return false;
+        }
+
+        if (detallesActuales.length === 0) {
+          mostrarError("Debe agregar al menos un producto al pedido.");
+          return false;
+        }
+
+        const total = parseFloat(document.getElementById("pedido-total").value);
+        if (total <= 0) {
+          mostrarError("El total del pedido debe ser mayor a 0.");
+          return false;
+        }
+
+        const accion = document.querySelector('[name="accion"]').value;
+        const mensaje =
+          accion === "editar"
+            ? "¿Está seguro de que desea guardar los cambios en este pedido?"
+            : "¿Está seguro de que desea crear este pedido?";
+
+        if (!confirm(mensaje)) {
+          return false;
+        }
+
+        prepararEnvioDetalles();
+        mostrarExito("Enviando pedido...");
+        return true;
+      }
+
+      function validarFormularioPedido() {
+        let esValido = true;
+        const form = document.getElementById("formPedido");
+
+        form.querySelectorAll(".is-invalid").forEach((campo) => {
+          limpiarValidacionCampo(campo);
+        });
+
+        const referencia = form.querySelector('[name="pedido-referencia"]');
+        if (!referencia.value.trim()) {
+          mostrarValidacionCampo(referencia, "La referencia es obligatoria.");
+          esValido = false;
+        } else if (referencia.value.trim().length < 3) {
+          mostrarValidacionCampo(
+            referencia,
+            "La referencia debe tener al menos 3 caracteres."
+          );
+          esValido = false;
+        }
+
+        const nombreCliente = form.querySelector(
+          '[name="pedido-nombre-cliente"]'
+        );
+        if (!nombreCliente.value.trim()) {
+          mostrarValidacionCampo(
+            nombreCliente,
+            "El nombre del cliente es obligatorio."
+          );
+          esValido = false;
+        } else if (nombreCliente.value.trim().length < 2) {
+          mostrarValidacionCampo(
+            nombreCliente,
+            "El nombre debe tener al menos 2 caracteres."
+          );
+          esValido = false;
+        }
+
+        const fecha = form.querySelector('[name="pedido-fecha"]');
+        if (!fecha.value) {
+          mostrarValidacionCampo(fecha, "La fecha es obligatoria.");
+          esValido = false;
+        } else {
+          const fechaSeleccionada = new Date(fecha.value);
+          const ahora = new Date();
+          if (fechaSeleccionada > ahora) {
+            mostrarValidacionCampo(fecha, "La fecha no puede ser futura.");
+            esValido = false;
+          }
+        }
+
+        const estado = form.querySelector('[name="pedido-estado"]');
+        if (!estado.value) {
+          mostrarValidacionCampo(estado, "Debe seleccionar un estado.");
+          esValido = false;
+        }
+
+        return esValido;
+      }
+
+      function prepararEnvioDetalles() {
+        document.getElementById("detallesEliminados").value =
+          JSON.stringify(detallesEliminados);
+        document.getElementById("detallesAgregados").value =
+          JSON.stringify(detallesAgregados);
+        document.getElementById("detallesEditados").value =
+          JSON.stringify(detallesEditados);
+      }
+
+      function limpiarArraysCambios() {
+        detallesEliminados = [];
+        detallesAgregados = [];
+        detallesEditados = [];
+        detallesOriginales = [];
+        detallesActuales = [];
+        contadorTemporal = -1;
+      }
+
+      async function cargarDetallesPedido(pedidoId) {
+        try {
+          const response = await fetch(
+            `pedidos?accion=obtenerDetalles&pedidoId=\${pedidoId}`
+          );
+          if (response.ok) {
+            const detalles = await response.json();
+            detallesOriginales = JSON.parse(JSON.stringify(detalles));
+            detallesActuales = detalles.map((d) => ({
+              ...d,
+              esNuevo: false,
+              subtotal: d.cantidad * d.precio,
+            }));
+
+            detallesEliminados = [];
+            detallesAgregados = [];
+            detallesEditados = [];
+
+            actualizarTablaDetalles();
+            calcularTotalPedido();
+          }
+        } catch (error) {
+          console.error("Error al cargar detalles:", error);
+        }
+      }
+
+      function mostrarValidacionCampo(campo, mensaje) {
+        campo.classList.add("is-invalid");
+        let feedback = campo.nextElementSibling;
+        if (feedback && feedback.classList.contains("invalid-feedback")) {
+          feedback.textContent = mensaje;
+        }
+
+        if (document.querySelector(".is-invalid") === campo) {
+          campo.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+
+      function limpiarValidacionCampo(campo) {
+        campo.classList.remove("is-invalid");
+      }
+
+      function mostrarError(mensaje) {
+        mostrarToast(mensaje, "error");
+      }
+
+      function mostrarExito(mensaje) {
+        mostrarToast(mensaje, "success");
+      }
+
+      function mostrarAdvertencia(mensaje) {
+        mostrarToast(mensaje, "warning");
+      }
+
+      function mostrarToast(mensaje, tipo = "info", duracion = 5000) {
+        setTimeout(() => {
+          const toastContainer = document.getElementById("toastContainer");
+          if (!toastContainer) {
+            return;
+          }
+
+          const toastId =
+            "toast-" +
+            Date.now() +
+            "-" +
+            Math.random().toString(36).substr(2, 9);
+
+          let bgClass = "bg-primary";
+          let iconClass = "bi-info-circle";
+
+          switch (tipo) {
+            case "success":
+              bgClass = "bg-success";
+              iconClass = "bi-check-circle";
+              break;
+            case "error":
+              bgClass = "bg-danger";
+              iconClass = "bi-exclamation-triangle";
+              duracion = 8000;
+              break;
+            case "warning":
+              bgClass = "bg-warning";
+              iconClass = "bi-exclamation-triangle";
+              break;
+          }
+
+          const toastHTML = `
+            <div class="toast \${bgClass} text-white" id="\${toastId}" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header \${bgClass} text-white border-0">
+                <i class="bi \${iconClass} me-2"></i>
+                <strong class="me-auto">FerreStock</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body">
+                \${mensaje}
+              </div>
+            </div>
+          `;
+
+          toastContainer.insertAdjacentHTML("beforeend", toastHTML);
+
+          const toastElement = document.getElementById(toastId);
+          if (!toastElement) {
+            return;
+          }
+
+          if (typeof bootstrap === "undefined") {
+            return;
+          }
+
+          const toast = new bootstrap.Toast(toastElement, { delay: duracion });
+          toast.show();
+
+          toastElement.addEventListener("hidden.bs.toast", function () {
+            toastElement.remove();
+          });
+        }, 100);
+      }
+
+      function agregarValidacionTiempoReal() {
+        document
+          .getElementById("pedido-referencia")
+          .addEventListener("input", function () {
+            const valor = this.value.trim();
+            if (valor.length < 3) {
+              mostrarValidacionCampo(
+                this,
+                "La referencia debe tener al menos 3 caracteres."
+              );
+            } else if (!/^[A-Z0-9\-]+$/i.test(valor)) {
+              mostrarValidacionCampo(
+                this,
+                "Solo se permiten letras, números y guiones."
+              );
+            } else {
+              limpiarValidacionCampo(this);
+            }
+          });
+
+        document
+          .getElementById("pedido-nombre-cliente")
+          .addEventListener("input", function () {
+            const valor = this.value.trim();
+            if (valor.length < 2) {
+              mostrarValidacionCampo(
+                this,
+                "El nombre debe tener al menos 2 caracteres."
+              );
+            } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(valor)) {
+              mostrarValidacionCampo(
+                this,
+                "Solo se permiten letras y espacios."
+              );
+            } else {
+              limpiarValidacionCampo(this);
+            }
+          });
+
+        document
+          .getElementById("pedido-fecha")
+          .addEventListener("change", function () {
+            const fechaSeleccionada = new Date(this.value);
+            const ahora = new Date();
+            const hace1Ano = new Date();
+            hace1Ano.setFullYear(ahora.getFullYear() - 1);
+
+            if (fechaSeleccionada > ahora) {
+              mostrarValidacionCampo(this, "La fecha no puede ser futura.");
+            } else if (fechaSeleccionada < hace1Ano) {
+              mostrarValidacionCampo(
+                this,
+                "La fecha no puede ser mayor a 1 año atrás."
+              );
+            } else {
+              limpiarValidacionCampo(this);
+            }
+          });
+
+        document
+          .getElementById("detalle-cantidad")
+          .addEventListener("input", function () {
+            const valor = parseInt(this.value);
+            if (isNaN(valor) || valor <= 0) {
+              mostrarValidacionCampo(
+                this,
+                "La cantidad debe ser un número mayor a 0."
+              );
+            } else if (valor > 1000) {
+              mostrarValidacionCampo(
+                this,
+                "La cantidad no puede ser mayor a 1000."
+              );
+            } else {
+              limpiarValidacionCampo(this);
+            }
+          });
+      }
+
+      function validarProductoDuplicado(productoId) {
+        const productoExistente = detallesActuales.find(
+          (d) => d.productoId === parseInt(productoId)
+        );
+        if (productoExistente && editandoIndex === -1) {
+          const nombreProducto =
+            document.getElementById("select-producto").selectedOptions[0]
+              ?.dataset.nombre || "este producto";
+          mostrarError(
+            `\${nombreProducto} ya está en el pedido con cantidad \${productoExistente.cantidad}. Puede editarlo desde la tabla.`
+          );
+          return false;
+        }
+        return true;
+      }
+
+      function validarStock(productoId, cantidadSolicitada) {
+        const producto = productosDisponibles.find(
+          (p) => p.id === parseInt(productoId)
+        );
+        if (producto && producto.stock < cantidadSolicitada) {
+          mostrarError(
+            `Stock insuficiente. Solo hay \${producto.stock} unidades disponibles de \${producto.nombre}.`
+          );
+          return false;
+        }
+        return true;
+      }
+
       const modalPedido = document.getElementById("formPedidoModal");
 
       modalPedido.addEventListener("show.bs.modal", function (event) {
-        const boton = event.relatedTarget; // el botón que abrió el modal
-
+        const boton = event.relatedTarget;
         const id = boton.getAttribute("data-pedido-id");
         const referencia = boton.getAttribute("data-pedido-referencia");
         const nombreCliente = boton.getAttribute("data-pedido-nombre-cliente");
         const fecha = boton.getAttribute("data-pedido-fecha");
         const total = boton.getAttribute("data-pedido-total");
         const estado = boton.getAttribute("data-pedido-estado");
-
-        console.log(event);
-        console.log(id, referencia, nombreCliente, fecha, total, estado);
 
         const form = document.getElementById("formPedido");
 
@@ -378,12 +1220,6 @@ uri="http://java.sun.com/jsp/jstl/core" %>
         document.querySelector(
           ".modal-body:has(#formPedido) + .modal-footer > .btn-primary"
         ).textContent = id ? "Guardar Cambios" : "Guardar Pedido";
-        console.log(
-          "xd",
-          document.querySelector(
-            ".modal-body:has(#formPedido) + .modal-footer > .btn-primary"
-          )
-        );
 
         if (id) {
           form.querySelector('[name="accion"]').value = "editar";
@@ -403,13 +1239,41 @@ uri="http://java.sun.com/jsp/jstl/core" %>
           form.querySelector('[name="pedido-fecha"]').value = fecha;
           form.querySelector('[name="pedido-total"]').value = total;
           form.querySelector('[name="pedido-estado"]').value = estado;
+
+          cargarDetallesPedido(id);
         } else {
           form.reset();
           form.querySelector('[name="accion"]').value = "agregar";
-          const idInput = form.querySelector('[name="id"]');
+          const idInput = form.querySelector('[name="pedido-id"]');
           if (idInput) idInput.remove();
+
+          limpiarArraysCambios();
+          actualizarTablaDetalles();
+          cancelarEdicion();
         }
+
+        form.querySelectorAll(".is-invalid").forEach((campo) => {
+          limpiarValidacionCampo(campo);
+        });
       });
+
+      document
+        .getElementById("formPedidoModal")
+        .addEventListener("hidden.bs.modal", function () {
+          limpiarFormularioDetalle();
+          cancelarEdicion();
+        });
+
+      const modalEliminar = document.getElementById("modalEliminar");
+      if (modalEliminar) {
+        modalEliminar.addEventListener("show.bs.modal", (event) => {
+          const button = event.relatedTarget;
+          document.getElementById("modalEliminarId").value =
+            button.getAttribute("data-pedido-id");
+          document.getElementById("modalEliminarNombre").textContent =
+            button.getAttribute("data-pedido-referencia");
+        });
+      }
     </script>
 
     <script

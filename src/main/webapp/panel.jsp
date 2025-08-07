@@ -29,6 +29,28 @@ uri="http://java.sun.com/jsp/jstl/core" %>
       .main-content {
         flex-grow: 1;
       }
+
+      .is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+      }
+
+      .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+      }
+
+      .valid-feedback {
+        color: #28a745;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+
+      .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
     </style>
   </head>
   <body class="vh-100">
@@ -398,15 +420,12 @@ uri="http://java.sun.com/jsp/jstl/core" %>
 
       modalProducto.addEventListener("show.bs.modal", function (event) {
         const boton = event.relatedTarget;
-        
+
         const id = boton.getAttribute("data-prod-id");
         const sku = boton.getAttribute("data-prod-sku");
         const nombre = boton.getAttribute("data-prod-nombre");
         const stock = boton.getAttribute("data-prod-stock");
         const precio = boton.getAttribute("data-prod-precio");
-
-        console.log(event);
-        console.log(id, sku, nombre, stock, precio);
 
         const form = document.getElementById("formProducto");
 
@@ -443,8 +462,18 @@ uri="http://java.sun.com/jsp/jstl/core" %>
         } else {
           form.reset();
           form.querySelector('[name="accion"]').value = "agregar";
-          const idInput = form.querySelector('[name="id"]');
+          const idInput = form.querySelector('[name="producto-id"]');
           if (idInput) idInput.remove();
+
+          const inputs = form.querySelectorAll(".form-control");
+          inputs.forEach((input) => {
+            input.classList.remove("is-valid", "is-invalid");
+          });
+
+          const feedbacks = form.querySelectorAll(
+            ".valid-feedback, .invalid-feedback"
+          );
+          feedbacks.forEach((feedback) => feedback.remove());
         }
       });
       document
@@ -452,12 +481,265 @@ uri="http://java.sun.com/jsp/jstl/core" %>
         .addEventListener("submit", function (event) {
           event.preventDefault();
 
-          console.log("Form is being submitted", new FormData(this));
-
           setTimeout(() => {
             this.submit();
           }, 20000);
         });
+    </script>
+
+    <div
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+      style="z-index: 1055"
+    >
+      <div
+        id="toastExito"
+        class="toast align-items-center text-bg-success border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div class="toast-body" id="toastExitoMensaje"></div>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+      </div>
+
+      <div
+        id="toastError"
+        class="toast align-items-center text-bg-danger border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div class="toast-body" id="toastErrorMensaje"></div>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function mostrarExito(mensaje) {
+        const toastElement = document.getElementById("toastExito");
+        const toastMensaje = document.getElementById("toastExitoMensaje");
+        toastMensaje.textContent = mensaje;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+      }
+
+      function mostrarError(mensaje) {
+        const toastElement = document.getElementById("toastError");
+        const toastMensaje = document.getElementById("toastErrorMensaje");
+        toastMensaje.textContent = mensaje;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get("error");
+        const success = urlParams.get("success");
+        const sku = urlParams.get("sku");
+
+        if (error === "sku_duplicado") {
+          mostrarError(
+            `El SKU '\${sku}' ya existe. Por favor, usa un SKU diferente.`
+          );
+
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (error === "id_invalido") {
+          mostrarError(
+            "Error: ID de producto inválido. No se pudo eliminar el producto."
+          );
+
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (success === "eliminado") {
+          mostrarExito("Producto eliminado correctamente.");
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (success === "creado") {
+          mostrarExito("Producto creado correctamente.");
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (success === "editado") {
+          mostrarExito("Producto editado correctamente.");
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        }
+      });
+
+      function agregarValidacionTiempoReal() {
+        const inputs = [
+          {
+            selector: "#producto-sku",
+            validacion: validarSKU,
+            mensaje: "El SKU debe tener entre 3 y 20 caracteres alfanuméricos.",
+          },
+          {
+            selector: "#producto-nombre",
+            validacion: validarNombre,
+            mensaje: "El nombre debe tener entre 2 y 100 caracteres.",
+          },
+          {
+            selector: "#producto-stock",
+            validacion: validarStock,
+            mensaje: "El stock debe ser un número entero mayor o igual a 0.",
+          },
+          {
+            selector: "#producto-valor",
+            validacion: validarPrecio,
+            mensaje: "El precio debe ser un número mayor a 0.",
+          },
+        ];
+
+        inputs.forEach(({ selector, validacion, mensaje }) => {
+          const elemento = document.querySelector(selector);
+          if (elemento) {
+            elemento.addEventListener("blur", function () {
+              const esValido = validacion(this.value);
+              mostrarValidacion(this, esValido, mensaje);
+            });
+
+            elemento.addEventListener("input", function () {
+              this.classList.remove("is-invalid");
+              const feedbackElement = this.nextElementSibling;
+              if (
+                feedbackElement &&
+                feedbackElement.classList.contains("invalid-feedback")
+              ) {
+                feedbackElement.remove();
+              }
+            });
+          }
+        });
+      }
+
+      function validarSKU(sku) {
+        return (
+          sku &&
+          sku.length >= 3 &&
+          sku.length <= 20 &&
+          /^[a-zA-Z0-9]+$/.test(sku)
+        );
+      }
+
+      function validarNombre(nombre) {
+        return nombre && nombre.trim().length >= 2 && nombre.length <= 100;
+      }
+
+      function validarStock(stock) {
+        const num = parseInt(stock);
+        return !isNaN(num) && num >= 0;
+      }
+
+      function validarPrecio(precio) {
+        const num = parseFloat(precio);
+        return !isNaN(num) && num > 0;
+      }
+
+      function mostrarValidacion(elemento, esValido, mensajeError) {
+        elemento.classList.remove("is-valid", "is-invalid");
+        const feedbackAnterior = elemento.nextElementSibling;
+        if (
+          feedbackAnterior &&
+          (feedbackAnterior.classList.contains("valid-feedback") ||
+            feedbackAnterior.classList.contains("invalid-feedback"))
+        ) {
+          feedbackAnterior.remove();
+        }
+
+        if (esValido) {
+          elemento.classList.add("is-valid");
+          const feedback = document.createElement("div");
+          feedback.className = "valid-feedback";
+          feedback.textContent = "✓ Campo válido";
+          elemento.parentNode.insertBefore(feedback, elemento.nextSibling);
+        } else {
+          elemento.classList.add("is-invalid");
+          const feedback = document.createElement("div");
+          feedback.className = "invalid-feedback";
+          feedback.textContent = mensajeError;
+          elemento.parentNode.insertBefore(feedback, elemento.nextSibling);
+        }
+      }
+
+      function validarFormularioProducto() {
+        const sku = document.querySelector("#producto-sku").value;
+        const nombre = document.querySelector("#producto-nombre").value;
+        const stock = document.querySelector("#producto-stock").value;
+        const precio = document.querySelector("#producto-valor").value;
+
+        const skuValido = validarSKU(sku);
+        const nombreValido = validarNombre(nombre);
+        const stockValido = validarStock(stock);
+        const precioValido = validarPrecio(precio);
+
+        mostrarValidacion(
+          document.querySelector("#producto-sku"),
+          skuValido,
+          "El SKU debe tener entre 3 y 20 caracteres alfanuméricos."
+        );
+        mostrarValidacion(
+          document.querySelector("#producto-nombre"),
+          nombreValido,
+          "El nombre debe tener entre 2 y 100 caracteres."
+        );
+        mostrarValidacion(
+          document.querySelector("#producto-stock"),
+          stockValido,
+          "El stock debe ser un número entero mayor o igual a 0."
+        );
+        mostrarValidacion(
+          document.querySelector("#producto-valor"),
+          precioValido,
+          "El precio debe ser un número mayor a 0."
+        );
+
+        return skuValido && nombreValido && stockValido && precioValido;
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        agregarValidacionTiempoReal();
+
+        const formulario = document.querySelector("#formProducto");
+        if (formulario) {
+          formulario.addEventListener("submit", function (e) {
+            if (!validarFormularioProducto()) {
+              e.preventDefault();
+              mostrarError(
+                "Por favor, corrige los errores en el formulario antes de continuar."
+              );
+            }
+          });
+        }
+      });
     </script>
 
     <script

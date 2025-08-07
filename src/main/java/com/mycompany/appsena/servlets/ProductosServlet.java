@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.mycompany.appsena.servlets;
 
 import com.mycompany.appsena.models.Producto;
@@ -19,6 +15,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  *
@@ -44,27 +43,61 @@ public class ProductosServlet extends HttpServlet {
             response.sendRedirect("index.html");
             return;
         }
+        
         String url = "jdbc:mysql://localhost:3306/gt_app";
-        ArrayList<Producto> productos = new ArrayList<>();
         String accion = request.getParameter("accion");
+        
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(url, "root", "");
+            stmt = conn.createStatement();
 
-            Connection conn = DriverManager.getConnection(url, "root", "");
-            Statement stmt = conn.createStatement();
-
-            System.out.println("xdial");
-            
-            System.out.println("producto-id");
-
-            System.out.println(request.getParameter("accion"));
             if (accion != null) {
                 switch (accion) {
+                    case "listar": {
+                        response.setContentType("application/json");
+                        response.setCharacterEncoding("UTF-8");
+                        
+                        String sqlQuery = "SELECT * FROM productos WHERE stock > 0 ORDER BY nombre";
+                        rs = stmt.executeQuery(sqlQuery);
+                        
+                        Gson gson = new Gson();
+                        JsonArray productosArray = new JsonArray();
+                        
+                        while (rs.next()) {
+                            JsonObject producto = new JsonObject();
+                            producto.addProperty("id", rs.getInt("id"));
+                            producto.addProperty("sku", rs.getString("sku"));
+                            producto.addProperty("nombre", rs.getString("nombre"));
+                            producto.addProperty("stock", rs.getInt("stock"));
+                            producto.addProperty("valor", rs.getDouble("precio"));
+                            productosArray.add(producto);
+                        }
+                        
+                        String jsonResponse = gson.toJson(productosArray);
+                        
+                        try (PrintWriter out = response.getWriter()) {
+                            out.print(jsonResponse);
+                            out.flush();
+                        }
+                        return;
+                    }
                     case "eliminar": {
                         String id = request.getParameter("id");
+                        
+                        if (id == null || id.trim().isEmpty()) {
+                            response.sendRedirect("productos?error=id_invalido");
+                            return;
+                        }
+                        
                         stmt.executeUpdate("DELETE FROM `productos` WHERE `id` = " + id);
-                        break;
+                        
+                        response.sendRedirect("productos?success=eliminado");
+                        return;
                     }
                     case "agregar": {
                         String sku = request.getParameter("producto-sku");
@@ -72,8 +105,18 @@ public class ProductosServlet extends HttpServlet {
                         int stock = Integer.parseInt(request.getParameter("producto-stock"));
                         double precio = Double.parseDouble(request.getParameter("producto-valor"));
 
-                        stmt.executeUpdate("INSERT INTO `productos` (`sku`, `nombre`, `stock`, `precio`) VALUES ('" + sku + "','" + nombre + "', '" + stock + "', '" + precio + "')");
-                        break;
+                        try {
+                            stmt.executeUpdate("INSERT INTO `productos` (`sku`, `nombre`, `stock`, `precio`) VALUES ('" + sku + "','" + nombre + "', '" + stock + "', '" + precio + "')");
+                            response.sendRedirect("productos?success=creado");
+                            return;
+                        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+                            if (e.getMessage().contains("sku")) {
+                                response.sendRedirect("productos?error=sku_duplicado&sku=" + sku);
+                                return;
+                            } else {
+                                throw e;
+                            }
+                        }
                     }
                     case "editar": {
                         int id = Integer.parseInt(request.getParameter("producto-id"));
@@ -82,34 +125,50 @@ public class ProductosServlet extends HttpServlet {
                         int stock = Integer.parseInt(request.getParameter("producto-stock"));
                         double precio = Double.parseDouble(request.getParameter("producto-valor"));
 
-                        stmt.executeUpdate("UPDATE `productos` SET `sku`='" + sku + "', `nombre`='" + nombre + "', `stock`='" + stock + "', `precio`='" + precio + "' WHERE `id`='" + id + "'");
-                        break;
+                        try {
+                            stmt.executeUpdate("UPDATE `productos` SET `sku`='" + sku + "', `nombre`='" + nombre + "', `stock`='" + stock + "', `precio`='" + precio + "' WHERE `id`='" + id + "'");
+                            response.sendRedirect("productos?success=editado");
+                            return;
+                        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+                            if (e.getMessage().contains("sku")) {
+                                response.sendRedirect("productos?error=sku_duplicado&sku=" + sku);
+                                return;
+                            } else {
+                                throw e;
+                            }
+                        }
                     }
                 }
             }
 
+            ArrayList<Producto> productos = new ArrayList<>();
             String buscar = request.getParameter("buscar");
-            System.out.println("buscar: " + buscar);
             String sqlQuery = "SELECT * FROM productos";
             if (buscar != null) {
                 sqlQuery += " WHERE CONCAT(id, sku, nombre, stock, precio) LIKE '%" + buscar + "%'";
             }
-            ResultSet rs = stmt.executeQuery(sqlQuery);
+            rs = stmt.executeQuery(sqlQuery);
 
             while (rs.next()) {
                 Producto prod = new Producto(rs.getInt("id"), rs.getString("sku"), rs.getString("nombre"), rs.getInt("stock"), rs.getDouble("precio"));
                 productos.add(prod);
             }
 
-            conn.close();
-            stmt.close();
-            rs.close();
-
             request.setAttribute("listaProductos", productos);
             RequestDispatcher rd = request.getRequestDispatcher("panel.jsp");
             rd.forward(request, response);
+            
         } catch (Exception e) {
             e.printStackTrace();
+            throw new ServletException(e);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
